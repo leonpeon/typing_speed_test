@@ -16,9 +16,11 @@
 import tkinter as tk
 from tkinter import *
 import time
+from words import Words
 
 window = Tk()
 window.title("Typing Speed Test")
+words = Words()
 
 # Adjusts placement of window
 window_width = 900
@@ -30,11 +32,21 @@ x = (screen_width - window_width) // 2
 y = (screen_height - screen_height) // 2 + 25
 window.geometry(f"{window_width}x{window_height}+{x}+{y}")
 
+# Title of program
 title_label = Label(window, text="TYPING SPEED TEST")
+title_label.pack()
+
+# Word display frame
+word_frame = LabelFrame(window, height=400, width=600)
+word_frame.pack()
+
+for word in words.words_for_test[:5]:
+    word_label = Label(word_frame, text=word)
+    word_label.pack() 
+
+# Text box for user input
 text_entry = Entry(window, text="Type here:")
 text_entry.focus()
-
-title_label.pack()
 text_entry.pack()
 
 
