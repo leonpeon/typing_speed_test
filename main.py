@@ -38,6 +38,4 @@ title_label.pack()
 text_entry.pack()
 
 
-
-
 window.mainloop()
