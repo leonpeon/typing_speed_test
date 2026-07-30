@@ -17,5 +17,27 @@ import tkinter as tk
 from tkinter import *
 import time
 
-tk = Tk()
+window = Tk()
+window.title("Typing Speed Test")
 
+# Adjusts placement of window
+window_width = 900
+window_height = 600
+screen_width = window.winfo_screenwidth()
+screen_height = window.winfo_screenheight()
+
+x = (screen_width - window_width) // 2
+y = (screen_height - screen_height) // 2 + 25
+window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
+title_label = Label(window, text="TYPING SPEED TEST")
+text_entry = Entry(window, text="Type here:")
+text_entry.focus()
+
+title_label.pack()
+text_entry.pack()
+
+
+
+
+window.mainloop()
