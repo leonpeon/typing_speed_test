@@ -68,7 +68,7 @@ for word in words.words_for_test[:15]:
         letter_labels.append(letter_label)
         letter_label.pack(side="left")
 
-    word_units[word] = letter_labels # Dictionary is {word: [word_frame, list of letters in word]}
+    word_units[word] = [word_unit, letter_labels] # Dictionary is {word: [word_frame, list of letter frames]}
 
     if column == 5:
         row += 1
@@ -76,70 +76,82 @@ for word in words.words_for_test[:15]:
     word_unit.grid(column=column, row=row)
     column += 1
 
-print(word_units)
 word_dict = list(word_units.keys())
 
 word_counter = 0
 current_word = word_dict[word_counter]
-current_word_letter_frames_list = word_units[current_word]
+current_letter_list = word_units[current_word][1]
 letter_counter = 0
 current_letter = list(current_word)[letter_counter]
 user_inputs = []
 
+def refresh_word():
+    global word_counter, current_word, current_letter_list, letter_counter, current_letter, user_inputs
+    current_word = word_dict[word_counter]
+    current_letter_list = word_units[current_word][1]
+    current_letter = list(current_word)[letter_counter]
+
 # Provides the first word
 def check_word():
-    global current_word
-    for letter in word_units[current_word]:
+    global current_word, current_letter_list
+    for letter in current_letter_list:
         letter.configure(bg="light blue")
 
 # Provides a new word everytime the user presses space
 def new_word():
-    global letter_counter, current_letter, current_word, word_counter, user_inputs
+    global letter_counter, current_letter, current_word, word_counter, user_inputs, current_letter_list
     text_entry.delete(0, END)
     word_counter += 1
     letter_counter = 0
     current_word = word_dict[word_counter]
     current_letter = list(current_word)[letter_counter]
-    word_units[current_word].configure(bg="light blue")
+    for letter in current_letter_list:
+        letter.configure(bg="light blue")
     user_inputs = []
     
 # Checks if the user input matches the correct letter.
 def check_letter(event):
-    global letter_counter, current_letter, current_word, user_inputs, current_word_letter_frames_list
+    global letter_counter, current_letter, current_word, user_inputs, current_letter_list
 
     if event.keysym == "BackSpace":
         if user_inputs:
             user_inputs.pop()
 
+            if letter_counter > 0:
+                letter_counter -= 1
+                current_letter_list[letter_counter].config(bg="light blue")
+                refresh_word()
+
     elif event.keysym == "space":
-            print(user_inputs)
-            print(list(current_word))
-    
             if user_inputs == list(current_word):
-                word_units[current_word].configure(bg="light green")
+                for letter in current_letter_list:
+                    letter.configure(bg="light green")
     
             else:
-                word_units[current_word].configure(bg="red")
+                for letter in current_letter_list:
+                    letter.configure(bg="red")
             new_word()
+
+    elif event.char in ["\r", "", "\t"]:
+            pass
+
+    elif letter_counter > len(current_word) - 1:
+        wrong_letters_add = Label(word_units[current_word][0], text=event.char, bg="red", font=word_font)
+        wrong_letters_add.pack(side="left")
 
     elif event.keysym == current_letter:
         print(f"CORRECT LETTER: {current_letter}")
         user_inputs.append(event.char)
-        current_word_letter_frames_list[letter_counter].config(bg="light green")
-
-
-        if letter_counter >= len(current_word) - 1:
-            pass
-        else:
-            letter_counter += 1
-            current_letter = list(current_word)[letter_counter]
-
-    elif event.char in ["\r", "", "\t"]:
-        pass
+        current_letter_list[letter_counter].config(bg="light green")
+        letter_counter += 1
+        refresh_word()
 
     else:
         user_inputs.append(event.char)
+        current_letter_list[letter_counter].config(bg="red")
+        letter_counter += 1
         print(f"WRONG LETTER: {event.keysym}")
+        refresh_word()
 
 
 # Text box for user input
