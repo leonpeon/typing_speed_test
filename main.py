@@ -23,6 +23,12 @@ window = Tk()
 window.title("Typing Speed Test")
 words = Words()
 
+title_font = tkFont.Font(
+    family="Segoe UI",
+    size=44,
+    weight="bold"
+)
+
 word_font = tkFont.Font(
     family="Arial",
     size=36,
@@ -41,7 +47,7 @@ y = (screen_height - screen_height) // 2 + 25
 window.geometry(f"{window_width}x{window_height}+{x}+{y}")
 
 # Title of program
-title_label = Label(window, text="TYPING SPEED TEST")
+title_label = Label(window, text="TYPING SPEED TEST", font=title_font, fg="purple")
 title_label.pack()
 
 # Word display frame
