@@ -56,23 +56,32 @@ word_frame.pack()
 word_frame.pack_propagate(False)
 
 # Creates dictionary of words with their corresponding word labels.
-word_labels = []
-for word in words.words_for_test[:15]:
-    word_label = Label(word_frame, text=word, font=word_font)
-    word_label.text = word
-    word_labels.append(word_label)
-
+word_units = {} # A frame which contains the labels of each letter of each word.
 row = 0
 column = 0
-for word in word_labels:
+for word in words.words_for_test[:15]:
+    word_unit = Frame(word_frame, width=160, height=150)
+
+    letter_labels = []
+    for letter in list(word):
+        letter_label = Label(word_unit, text=letter, font=word_font)
+        letter_labels.append(letter_label)
+        letter_label.pack(side="left")
+
+    word_units[word] = letter_labels # Dictionary is {word: [word_frame, list of letters in word]}
+
     if column == 5:
         row += 1
         column = 0
-    word.grid(column=column, row=row)
+    word_unit.grid(column=column, row=row)
     column += 1
 
+print(word_units)
+word_dict = list(word_units.keys())
+
 word_counter = 0
-current_word = word_labels[word_counter].text
+current_word = word_dict[word_counter]
+current_word_letter_frames_list = word_units[current_word]
 letter_counter = 0
 current_letter = list(current_word)[letter_counter]
 user_inputs = []
@@ -80,7 +89,8 @@ user_inputs = []
 # Provides the first word
 def check_word():
     global current_word
-    word_labels[word_counter].configure(bg="light blue")
+    for letter in word_units[current_word]:
+        letter.configure(bg="light blue")
 
 # Provides a new word everytime the user presses space
 def new_word():
@@ -88,15 +98,14 @@ def new_word():
     text_entry.delete(0, END)
     word_counter += 1
     letter_counter = 0
-    current_word = word_labels[word_counter].text
+    current_word = word_dict[word_counter]
     current_letter = list(current_word)[letter_counter]
-    word_labels[word_counter].configure(bg="light blue")
+    word_units[current_word].configure(bg="light blue")
     user_inputs = []
     
-
 # Checks if the user input matches the correct letter.
 def check_letter(event):
-    global letter_counter, current_letter, current_word, user_inputs
+    global letter_counter, current_letter, current_word, user_inputs, current_word_letter_frames_list
 
     if event.keysym == "BackSpace":
         if user_inputs:
@@ -107,15 +116,18 @@ def check_letter(event):
             print(list(current_word))
     
             if user_inputs == list(current_word):
-                word_labels[word_counter].configure(bg="light green")
+                word_units[current_word].configure(bg="light green")
     
             else:
-                word_labels[word_counter].configure(bg="red")
+                word_units[current_word].configure(bg="red")
             new_word()
 
     elif event.keysym == current_letter:
         print(f"CORRECT LETTER: {current_letter}")
         user_inputs.append(event.char)
+        current_word_letter_frames_list[letter_counter].config(bg="light green")
+
+
         if letter_counter >= len(current_word) - 1:
             pass
         else:
