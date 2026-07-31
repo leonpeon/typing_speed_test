@@ -85,6 +85,7 @@ letter_counter = 0
 current_letter = list(current_word)[letter_counter]
 user_inputs = []
 
+# Refreshs the letter / word everytime the user makes a keypress
 def refresh_word():
     global word_counter, current_word, current_letter_list, letter_counter, current_letter, user_inputs
     current_word = word_dict[word_counter]
@@ -128,14 +129,14 @@ def check_letter(event):
                 current_letter_list[letter_counter].config(bg="light blue")
 
     elif event.keysym == "space":
-            if user_inputs == list(current_word):
-                for letter in current_letter_list:
-                    letter.configure(bg="light green")
+            # if user_inputs == list(current_word):
+            #     for letter in current_letter_list:
+            #         letter.configure(bg="light green")
     
-            else:
-                for letter in current_letter_list:
-                    letter.configure(bg="red")
-            new_word()
+            # else:
+            #     for letter in current_letter_list:
+            #         letter.configure(bg="red")
+        new_word()
 
     elif event.char in ["\r", "", "\t"]:
             pass
@@ -170,5 +171,8 @@ check_word()
 
 text_entry.bind("<KeyPress>", check_letter)
 
-
 window.mainloop()
+
+# TO DO
+# - Find a way to make the words scroll once the user has finished a line.
+# - Create a timer and score system.
