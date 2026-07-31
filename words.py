@@ -9,9 +9,9 @@ class Words():
     def test_words(self):
         word_list = []
         while len(word_list) < 200:
-            word = choice(self.word_list)
+            word = choice(self.word_list).strip()
             if word in word_list:
                 pass
             else:
-                word_list.append(word.strip())
+                word_list.append(word)
         return word_list

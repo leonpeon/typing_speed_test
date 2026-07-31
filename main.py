@@ -21,6 +21,7 @@ from words import Words
 
 window = Tk()
 window.title("Typing Speed Test")
+window.resizable(False, False)
 words = Words()
 
 title_font = tkFont.Font(
@@ -35,38 +36,37 @@ word_font = tkFont.Font(
     weight=tkFont.NORMAL
 )
 
-
-# Adjusts placement of window
-window_width = 900
-window_height = 400
-screen_width = window.winfo_screenwidth()
-screen_height = window.winfo_screenheight()
-
-x = (screen_width - window_width) // 2
-y = (screen_height - screen_height) // 2 + 25
-window.geometry(f"{window_width}x{window_height}+{x}+{y}")
-
 # Title of program
 title_label = Label(window, text="TYPING SPEED TEST", font=title_font, fg="purple")
 title_label.pack()
 
 # Word display frame
-word_frame = LabelFrame(window, height=600, width=800)
-word_frame.pack()
-word_frame.pack_propagate(False)
+canvas_container = LabelFrame(window)
+canvas_frame = Canvas(canvas_container, height=234, width=850)
+word_frame = Frame(canvas_frame)
+canvas_frame.create_window((0,0), window=word_frame, anchor="nw")
+canvas_container.pack()
+canvas_frame.pack()
+
+word_frame.bind(
+    "<Configure>",
+    lambda e: canvas_frame.configure(
+        scrollregion=canvas_frame.bbox("all")
+    )
+)
 
 # Creates dictionary of words with their corresponding word labels.
 word_units = {} # A frame which contains the labels of each letter of each word.
 row = 0
 column = 0
-for word in words.words_for_test[:15]:
+for word in words.words_for_test:
     word_unit = Frame(word_frame, width=160, height=150)
 
     letter_labels = []
     for letter in list(word):
-        letter_label = Label(word_unit, text=letter, font=word_font)
+        letter_label = Label(word_unit, text=letter, font=word_font, pady=10)
         letter_labels.append(letter_label)
-        letter_label.pack(side="left", pady=10)
+        letter_label.pack(side="left")
 
     word_units[word] = [word_unit, letter_labels] # Dictionary is {word: [word_frame, list of letter frames]}
 
@@ -78,12 +78,16 @@ for word in words.words_for_test[:15]:
 
 word_dict = list(word_units.keys())
 
+word_frame.update_idletasks()
+canvas_frame.configure(scrollregion=canvas_frame.bbox("all"))
+
 word_counter = 0
 current_word = word_dict[word_counter]
 current_letter_list = word_units[current_word][1]
 letter_counter = 0
 current_letter = list(current_word)[letter_counter]
 user_inputs = []
+move_units = 0
 
 # Refreshs the letter / word everytime the user makes a keypress
 def refresh_word():
@@ -110,6 +114,9 @@ def new_word():
     refresh_word()
     for letter in current_letter_list:
         letter.configure(bg="light blue")
+
+    if word_counter + 1 >= 10 and (word_counter + 1) % 5 == 0:
+        scroll_down()
     user_inputs = []
     
 # Checks if the user input matches the correct letter.
@@ -129,13 +136,6 @@ def check_letter(event):
                 current_letter_list[letter_counter].config(bg="light blue")
 
     elif event.keysym == "space":
-            # if user_inputs == list(current_word):
-            #     for letter in current_letter_list:
-            #         letter.configure(bg="light green")
-    
-            # else:
-            #     for letter in current_letter_list:
-            #         letter.configure(bg="red")
         new_word()
 
     elif event.char in ["\r", "", "\t"]:
@@ -161,6 +161,10 @@ def check_letter(event):
         print(f"WRONG LETTER: {event.keysym}")
         refresh_word()
 
+def scroll_down():
+    global move_units
+    move_units += 0.025
+    canvas_frame.yview_moveto(move_units)
 
 # Text box for user input
 text_entry = Entry(window, text="Type here:")
@@ -171,6 +175,16 @@ check_word()
 
 text_entry.bind("<KeyPress>", check_letter)
 
+
+# Adjusts placement of window
+window_width = 1000
+window_height = 600
+screen_width = window.winfo_screenwidth()
+screen_height = window.winfo_screenheight()
+
+x = (screen_width - window_width) // 2
+y = (screen_height - screen_height) // 2 + 25
+window.geometry(f"{window_width}x{window_height}+{x}+{y}")
 window.mainloop()
 
 # TO DO
