@@ -66,7 +66,7 @@ for word in words.words_for_test[:15]:
     for letter in list(word):
         letter_label = Label(word_unit, text=letter, font=word_font)
         letter_labels.append(letter_label)
-        letter_label.pack(side="left")
+        letter_label.pack(side="left", pady=10)
 
     word_units[word] = [word_unit, letter_labels] # Dictionary is {word: [word_frame, list of letter frames]}
 
@@ -89,7 +89,10 @@ def refresh_word():
     global word_counter, current_word, current_letter_list, letter_counter, current_letter, user_inputs
     current_word = word_dict[word_counter]
     current_letter_list = word_units[current_word][1]
-    current_letter = list(current_word)[letter_counter]
+    try:
+        current_letter = list(current_word)[letter_counter]
+    except IndexError:
+        current_letter = None
 
 # Provides the first word
 def check_word():
@@ -103,8 +106,7 @@ def new_word():
     text_entry.delete(0, END)
     word_counter += 1
     letter_counter = 0
-    current_word = word_dict[word_counter]
-    current_letter = list(current_word)[letter_counter]
+    refresh_word()
     for letter in current_letter_list:
         letter.configure(bg="light blue")
     user_inputs = []
@@ -117,10 +119,13 @@ def check_letter(event):
         if user_inputs:
             user_inputs.pop()
 
-            if letter_counter > 0:
+            if len(current_letter_list) > len(current_word):
+                word_units[current_word][1].pop().destroy()
+
+            elif letter_counter > 0:
                 letter_counter -= 1
-                current_letter_list[letter_counter].config(bg="light blue")
                 refresh_word()
+                current_letter_list[letter_counter].config(bg="light blue")
 
     elif event.keysym == "space":
             if user_inputs == list(current_word):
@@ -137,6 +142,8 @@ def check_letter(event):
 
     elif letter_counter > len(current_word) - 1:
         wrong_letters_add = Label(word_units[current_word][0], text=event.char, bg="red", font=word_font)
+        user_inputs.append(event.char)
+        word_units[current_word][1].append(wrong_letters_add)
         wrong_letters_add.pack(side="left")
 
     elif event.keysym == current_letter:
