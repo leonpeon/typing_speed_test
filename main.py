@@ -15,12 +15,20 @@
 
 import tkinter as tk
 from tkinter import *
+import tkinter.font as tkFont
 import time
 from words import Words
 
 window = Tk()
 window.title("Typing Speed Test")
 words = Words()
+
+word_font = tkFont.Font(
+    family="Arial",
+    size=36,
+    weight=tkFont.NORMAL
+)
+
 
 # Adjusts placement of window
 window_width = 900
@@ -37,54 +45,83 @@ title_label = Label(window, text="TYPING SPEED TEST")
 title_label.pack()
 
 # Word display frame
-word_frame = LabelFrame(window, height=400, width=600)
+word_frame = LabelFrame(window, height=600, width=800)
 word_frame.pack()
+word_frame.pack_propagate(False)
 
 # Creates dictionary of words with their corresponding word labels.
-word_labels = {}
-for word in words.words_for_test[:5]:
-    word_label = Label(word_frame, text=word)
+word_labels = []
+for word in words.words_for_test[:15]:
+    word_label = Label(word_frame, text=word, font=word_font)
     word_label.text = word
-    word_labels[words.words_for_test.index(word)] = word_label
-    word_label.pack()
+    word_labels.append(word_label)
+
+row = 0
+column = 0
+for word in word_labels:
+    if column == 5:
+        row += 1
+        column = 0
+    word.grid(column=column, row=row)
+    column += 1
 
 word_counter = 0
 current_word = word_labels[word_counter].text
 letter_counter = 0
 current_letter = list(current_word)[letter_counter]
+user_inputs = []
 
+# Provides the first word
 def check_word():
     global current_word
-    word_labels[word_counter].configure(bg="light green")
-
-def new_word():
-    global letter_counter, current_letter, current_word, word_counter
-    text_entry.delete(0, END)
     word_labels[word_counter].configure(bg="light blue")
+
+# Provides a new word everytime the user presses space
+def new_word():
+    global letter_counter, current_letter, current_word, word_counter, user_inputs
+    text_entry.delete(0, END)
     word_counter += 1
     letter_counter = 0
     current_word = word_labels[word_counter].text
     current_letter = list(current_word)[letter_counter]
-    word_labels[word_counter].configure(bg="light green")
+    word_labels[word_counter].configure(bg="light blue")
+    user_inputs = []
+    
 
+# Checks if the user input matches the correct letter.
 def check_letter(event):
-    global letter_counter, current_letter, current_word, word_counter
-    if event.keysym == current_letter:
-        print(f"CORRECT LETTER: {current_letter}")
-        if letter_counter == len(current_word) - 1:
+    global letter_counter, current_letter, current_word, user_inputs
+
+    if event.keysym == "BackSpace":
+        if user_inputs:
+            user_inputs.pop()
+
+    elif event.keysym == "space":
+            print(user_inputs)
+            print(list(current_word))
+    
+            if user_inputs == list(current_word):
+                word_labels[word_counter].configure(bg="light green")
+    
+            else:
+                word_labels[word_counter].configure(bg="red")
             new_word()
+
+    elif event.keysym == current_letter:
+        print(f"CORRECT LETTER: {current_letter}")
+        user_inputs.append(event.char)
+        if letter_counter >= len(current_word) - 1:
+            pass
         else:
             letter_counter += 1
             current_letter = list(current_word)[letter_counter]
-    elif event.keysym == "space":
-        new_word()
-    else:
-        print(f"WRONG LETTER: {event.keysym}")
 
-# Get the current word, and convert it into a list of characters.
-# Find a way to use keyboard event listeners
-# If the character entered is the same as the corresponding character in the list, then text = blue, else red
-# When the user presses space, then it will go onto the next word. If any characters mismatch, then make the word red.
+    elif event.char in ["\r", "", "\t"]:
+        pass
+
+    else:
+        user_inputs.append(event.char)
+        print(f"WRONG LETTER: {event.keysym}")
 
 
 # Text box for user input
@@ -94,7 +131,7 @@ text_entry.pack()
 
 check_word()
 
-window.bind("<KeyPress>", check_letter)
+text_entry.bind("<KeyPress>", check_letter)
 
 
 window.mainloop()
