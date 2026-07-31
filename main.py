@@ -24,7 +24,7 @@ words = Words()
 
 # Adjusts placement of window
 window_width = 900
-window_height = 600
+window_height = 400
 screen_width = window.winfo_screenwidth()
 screen_height = window.winfo_screenheight()
 
@@ -40,14 +40,61 @@ title_label.pack()
 word_frame = LabelFrame(window, height=400, width=600)
 word_frame.pack()
 
+# Creates dictionary of words with their corresponding word labels.
+word_labels = {}
 for word in words.words_for_test[:5]:
     word_label = Label(word_frame, text=word)
-    word_label.pack() 
+    word_label.text = word
+    word_labels[words.words_for_test.index(word)] = word_label
+    word_label.pack()
+
+word_counter = 0
+current_word = word_labels[word_counter].text
+letter_counter = 0
+current_letter = list(current_word)[letter_counter]
+
+def check_word():
+    global current_word
+    word_labels[word_counter].configure(bg="light green")
+
+def new_word():
+    global letter_counter, current_letter, current_word, word_counter
+    text_entry.delete(0, END)
+    word_labels[word_counter].configure(bg="light blue")
+    word_counter += 1
+    letter_counter = 0
+    current_word = word_labels[word_counter].text
+    current_letter = list(current_word)[letter_counter]
+    word_labels[word_counter].configure(bg="light green")
+
+def check_letter(event):
+    global letter_counter, current_letter, current_word, word_counter
+    if event.keysym == current_letter:
+        print(f"CORRECT LETTER: {current_letter}")
+        if letter_counter == len(current_word) - 1:
+            new_word()
+        else:
+            letter_counter += 1
+            current_letter = list(current_word)[letter_counter]
+    elif event.keysym == "space":
+        new_word()
+    else:
+        print(f"WRONG LETTER: {event.keysym}")
+
+# Get the current word, and convert it into a list of characters.
+# Find a way to use keyboard event listeners
+# If the character entered is the same as the corresponding character in the list, then text = blue, else red
+# When the user presses space, then it will go onto the next word. If any characters mismatch, then make the word red.
+
 
 # Text box for user input
 text_entry = Entry(window, text="Type here:")
 text_entry.focus()
 text_entry.pack()
+
+check_word()
+
+window.bind("<KeyPress>", check_letter)
 
 
 window.mainloop()
