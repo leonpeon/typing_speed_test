@@ -7,7 +7,7 @@ window = Tk()
 window.title("Typing Speed Test")
 window.resizable(False, False)
 words = Words()
-time_left = 60
+time_left = 61
 with open("highest_wpm.txt") as file:
     high_score = float(file.readline())
 can_type = False
@@ -22,6 +22,12 @@ WORD_FONT = tkFont.Font(
     family="Arial",
     size=36,
     weight=tkFont.NORMAL
+)
+
+LABEL_FONT = tkFont.Font(
+    family="Consolas",
+    size=20,
+    weight="normal"
 )
 
 # Title of program
@@ -129,11 +135,16 @@ def check_letter(event):
                     current_letter_list[letter_counter].config(bg="light blue")
 
         elif event.keysym == "space":
-            for correct, typed in zip(list(current_word), user_inputs):
+            for correct, typed in zip(current_word, user_inputs):
                 if correct == typed:
                     correct_characters += 1
                 else:
                     incorrect_characters += 1
+
+            if len(user_inputs) < len(current_word):
+                incorrect_characters += len(current_word) - len(user_inputs)
+            elif len(user_inputs) > len(current_word):
+                incorrect_characters += len(user_inputs) - len(current_word)
 
             new_word()
 
@@ -179,16 +190,17 @@ def start_timer():
         words_per_minute()
         text_entry.config(state="disabled")
         can_type = False
+        time_left = 61
 
 def words_per_minute():
-    global correct_letters
+    global correct_characters, incorrect_characters
     total_characters = correct_characters + incorrect_characters
     raw_wpm = (total_characters/5)
     accuracy = (correct_characters/total_characters) * 100
     adjusted_wpm = raw_wpm * (accuracy/100)
     score_label.config(text=f"WPM: {adjusted_wpm:.1f}")
-    with open("highest_wpm", "w") as file:
-        file.write(adjusted_wpm)
+    with open("highest_wpm.txt", "w") as file:
+        file.write(f"{adjusted_wpm:.1f}")
     
     correct_characters = 0
     incorrect_characters = 0
@@ -199,9 +211,9 @@ bottom_frame.pack()
 text_entry = Entry(bottom_frame, text="Type here:", state="disabled")
 text_entry.focus()
 text_entry.grid(column=1, row=0, padx=30, pady=10)
-timer_label = Label(bottom_frame, text=f"Timer: --")
+timer_label = Label(bottom_frame, text=f"Timer: --", font=LABEL_FONT)
 timer_label.grid(column=0, row=0)
-score_label = Label(bottom_frame, text=f"WPM: {high_score}")
+score_label = Label(bottom_frame, text=f"WPM: {high_score}", font=LABEL_FONT)
 score_label.grid(column=2, row=0)
 start_button = Button(bottom_frame, text="Start", command=start_timer)
 start_button.grid(column=1, row=1, pady=20)
