@@ -10,7 +10,7 @@ words = Words()
 time_left = 61
 with open("highest_wpm.txt") as file:
     high_score = float(file.readline())
-can_type = False
+can_type = False # If false, keypresses will not modify the words
 
 TITLE_FONT = tkFont.Font(
     family="Segoe UI",
@@ -53,6 +53,17 @@ word_frame.bind(
 
 word_units = {} # A frame which contains the labels of each letter of each word.
 word_dict = {}
+
+# Main variables
+word_counter = 0 # Tracks index of current word within word list
+current_word = word_dict[word_counter] # Tracks current word
+current_letter_list = word_units[current_word][1] # List of letters within the current word
+letter_counter = 0 # Tracks index of current letter within the word
+current_letter = list(current_word)[letter_counter] # Current letter of current word
+user_inputs = [] # Tracks the keypresses the user makes
+move_units = 0 # Tracks where the position of the user's screen
+correct_characters = 0 # Tracks the amount of correct characters the user typed
+incorrect_characters = 0 # Tracks the amount of incorrect characters
 
 # Creates the display and dictionary of words with their corresponding word labels.
 def word_bank():
@@ -198,10 +209,10 @@ def reset():
             label.destroy()
 
     word_units = {}
-    letter_counter = 0
-    word_counter = 0
-    user_inputs = []
-    can_type = False
+    letter_counter = 0 
+    word_counter = 0 
+    user_inputs = [] 
+    can_type = False 
     text_entry.delete(0, END)
     timer_label.config(text=f"Timer: --")
     text_entry.config(state="disabled")
@@ -261,17 +272,6 @@ high_score_label = Label(bottom_frame, text=f"Highest WPM: {high_score}", font=L
 high_score_label.grid(column=2, row=1)
 start_button = Button(bottom_frame, text="Start", font=("arial", 14), command=start_timer)
 start_button.grid(column=1, row=1, pady=20)
-
-# Main variables
-word_counter = 0
-current_word = word_dict[word_counter]
-current_letter_list = word_units[current_word][1]
-letter_counter = 0
-current_letter = list(current_word)[letter_counter]
-user_inputs = []
-move_units = 0
-correct_characters = 0
-incorrect_characters = 0
 
 check_word()
 text_entry.bind("<KeyPress>", check_letter)
