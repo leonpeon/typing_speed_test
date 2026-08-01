@@ -1,43 +1,31 @@
-# TO DO:
-# 1. Get a word list, which the computer will randomly select 150
-# 2. Develop the basic GUI (each is a class): window, display text, text input, start button, timer, score
-# 3. Find a way to change the colour of the text once the user types it out
-# 4. Make the timer functional
-# 5. Count the total of the user's correct/mistyped words, then calculate the score.
-# 6. Store score into a text file
-
-# CLASSES:
-# Text: Displays text, changes text colour (depending on it was written correctly or not), 
-#       highlights text, does not allow the user to type if the timer is not active.
-# Button: Starts the timer, allows the user to type in text.
-# Timer: One minute timer
-# Score: Calculates WPM. Stores the score into a text file that can be referenced later.
-
 import tkinter as tk
 from tkinter import *
 import tkinter.font as tkFont
-import time
 from words import Words
 
 window = Tk()
 window.title("Typing Speed Test")
 window.resizable(False, False)
 words = Words()
+time_left = 60
+with open("highest_wpm.txt") as file:
+    high_score = float(file.readline())
+can_type = False
 
-title_font = tkFont.Font(
+TITLE_FONT = tkFont.Font(
     family="Segoe UI",
     size=44,
     weight="bold"
 )
 
-word_font = tkFont.Font(
+WORD_FONT = tkFont.Font(
     family="Arial",
     size=36,
     weight=tkFont.NORMAL
 )
 
 # Title of program
-title_label = Label(window, text="TYPING SPEED TEST", font=title_font, fg="purple")
+title_label = Label(window, text="TYPING SPEED TEST", font=TITLE_FONT, fg="purple")
 title_label.pack()
 
 # Word display frame
@@ -64,7 +52,7 @@ for word in words.words_for_test:
 
     letter_labels = []
     for letter in list(word):
-        letter_label = Label(word_unit, text=letter, font=word_font, pady=10)
+        letter_label = Label(word_unit, text=letter, font=WORD_FONT, pady=10)
         letter_labels.append(letter_label)
         letter_label.pack(side="left")
 
@@ -89,6 +77,9 @@ current_letter = list(current_word)[letter_counter]
 user_inputs = []
 move_units = 0
 
+correct_characters = 0
+incorrect_characters = 0
+
 # Refreshs the letter / word everytime the user makes a keypress
 def refresh_word():
     global word_counter, current_word, current_letter_list, letter_counter, current_letter, user_inputs
@@ -107,7 +98,7 @@ def check_word():
 
 # Provides a new word everytime the user presses space
 def new_word():
-    global letter_counter, current_letter, current_word, word_counter, user_inputs, current_letter_list
+    global letter_counter, word_counter, user_inputs, current_letter_list
     text_entry.delete(0, END)
     word_counter += 1
     letter_counter = 0
@@ -115,61 +106,106 @@ def new_word():
     for letter in current_letter_list:
         letter.configure(bg="light blue")
 
-    if word_counter + 1 >= 10 and (word_counter + 1) % 5 == 0:
+    if word_counter + 1 >= 11 and word_counter % 5 == 0:
         scroll_down()
     user_inputs = []
     
 # Checks if the user input matches the correct letter.
 def check_letter(event):
-    global letter_counter, current_letter, current_word, user_inputs, current_letter_list
-
-    if event.keysym == "BackSpace":
-        if user_inputs:
-            user_inputs.pop()
-
-            if len(current_letter_list) > len(current_word):
-                word_units[current_word][1].pop().destroy()
-
-            elif letter_counter > 0:
-                letter_counter -= 1
-                refresh_word()
-                current_letter_list[letter_counter].config(bg="light blue")
-
-    elif event.keysym == "space":
-        new_word()
-
-    elif event.char in ["\r", "", "\t"]:
-            pass
-
-    elif letter_counter > len(current_word) - 1:
-        wrong_letters_add = Label(word_units[current_word][0], text=event.char, bg="red", font=word_font)
-        user_inputs.append(event.char)
-        word_units[current_word][1].append(wrong_letters_add)
-        wrong_letters_add.pack(side="left")
-
-    elif event.keysym == current_letter:
-        print(f"CORRECT LETTER: {current_letter}")
-        user_inputs.append(event.char)
-        current_letter_list[letter_counter].config(bg="light green")
-        letter_counter += 1
-        refresh_word()
-
+    global letter_counter, current_letter, current_word, user_inputs, current_letter_list, correct_characters, incorrect_characters, can_type
+    if not can_type:
+        pass
     else:
-        user_inputs.append(event.char)
-        current_letter_list[letter_counter].config(bg="red")
-        letter_counter += 1
-        print(f"WRONG LETTER: {event.keysym}")
-        refresh_word()
+        if event.keysym == "BackSpace":
+            if user_inputs:
+                user_inputs.pop()
+
+                if len(current_letter_list) > len(current_word):
+                    word_units[current_word][1].pop().destroy()
+
+                elif letter_counter > 0:
+                    letter_counter -= 1
+                    refresh_word()
+                    current_letter_list[letter_counter].config(bg="light blue")
+
+        elif event.keysym == "space":
+            for correct, typed in zip(list(current_word), user_inputs):
+                if correct == typed:
+                    correct_characters += 1
+                else:
+                    incorrect_characters += 1
+
+            new_word()
+
+        elif event.char in ["\r", "", "\t"]:
+                pass
+
+        elif letter_counter > len(current_word) - 1:
+            wrong_letters_add = Label(word_units[current_word][0], text=event.char, bg="red", font=WORD_FONT)
+            user_inputs.append(event.char)
+            word_units[current_word][1].append(wrong_letters_add)
+            wrong_letters_add.pack(side="left")
+
+        elif event.keysym == current_letter:
+            print(f"CORRECT LETTER: {current_letter}")
+            user_inputs.append(event.char)
+            current_letter_list[letter_counter].config(bg="light green")
+            letter_counter += 1
+            refresh_word()
+
+        else:
+            user_inputs.append(event.char)
+            current_letter_list[letter_counter].config(bg="red")
+            letter_counter += 1
+            print(f"WRONG LETTER: {event.keysym}")
+            refresh_word()
 
 def scroll_down():
     global move_units
     move_units += 0.025
     canvas_frame.yview_moveto(move_units)
 
+def start_timer():
+    global time_left, can_type
+    if time_left > 0:
+        text_entry.config(state="normal")
+        can_type = True
+
+        time_left -= 1
+        timer_label.config(text=f"Timer: {time_left}")
+        window.after(1000, start_timer)
+
+    elif time_left == 0:
+        words_per_minute()
+        text_entry.config(state="disabled")
+        can_type = False
+
+def words_per_minute():
+    global correct_letters
+    total_characters = correct_characters + incorrect_characters
+    raw_wpm = (total_characters/5)
+    accuracy = (correct_characters/total_characters) * 100
+    adjusted_wpm = raw_wpm * (accuracy/100)
+    score_label.config(text=f"WPM: {adjusted_wpm:.1f}")
+    with open("highest_wpm", "w") as file:
+        file.write(adjusted_wpm)
+    
+    correct_characters = 0
+    incorrect_characters = 0
+
 # Text box for user input
-text_entry = Entry(window, text="Type here:")
+bottom_frame = Frame(window)
+bottom_frame.pack()
+text_entry = Entry(bottom_frame, text="Type here:", state="disabled")
 text_entry.focus()
-text_entry.pack()
+text_entry.grid(column=1, row=0, padx=30, pady=10)
+timer_label = Label(bottom_frame, text=f"Timer: --")
+timer_label.grid(column=0, row=0)
+score_label = Label(bottom_frame, text=f"WPM: {high_score}")
+score_label.grid(column=2, row=0)
+start_button = Button(bottom_frame, text="Start", command=start_timer)
+start_button.grid(column=1, row=1, pady=20)
+
 
 check_word()
 
@@ -186,7 +222,3 @@ x = (screen_width - window_width) // 2
 y = (screen_height - screen_height) // 2 + 25
 window.geometry(f"{window_width}x{window_height}+{x}+{y}")
 window.mainloop()
-
-# TO DO
-# - Find a way to make the words scroll once the user has finished a line.
-# - Create a timer and score system.
