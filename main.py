@@ -49,28 +49,36 @@ word_frame.bind(
     )
 )
 
-# Creates dictionary of words with their corresponding word labels.
 word_units = {} # A frame which contains the labels of each letter of each word.
-row = 0
-column = 0
-for word in words.words_for_test:
-    word_unit = Frame(word_frame, width=160, height=150)
+word_dict = {}
 
-    letter_labels = []
-    for letter in list(word):
-        letter_label = Label(word_unit, text=letter, font=WORD_FONT, pady=10)
-        letter_labels.append(letter_label)
-        letter_label.pack(side="left")
+# Creates dictionary of words with their corresponding word labels.
+def word_bank():
+    global word_units, word_dict
+    word_units = {}
+    row = 0
+    column = 0
+    for word in words.words_for_test:
+        word_unit = Frame(word_frame, width=160, height=150)
 
-    word_units[word] = [word_unit, letter_labels] # Dictionary is {word: [word_frame, list of letter frames]}
+        letter_labels = []
+        for letter in list(word):
+            letter_label = Label(word_unit, text=letter, font=WORD_FONT, pady=10)
+            letter_labels.append(letter_label)
+            letter_label.pack(side="left")
 
-    if column == 5:
-        row += 1
-        column = 0
-    word_unit.grid(column=column, row=row)
-    column += 1
+        word_units[word] = [word_unit, letter_labels] # Dictionary is {word: [word_frame, list of letter frames]}
 
-word_dict = list(word_units.keys())
+        if column == 5:
+            row += 1
+            column = 0
+        word_unit.grid(column=column, row=row)
+        column += 1
+
+        word_dict = list(word_units.keys())
+
+word_bank()
+
 
 word_frame.update_idletasks()
 canvas_frame.configure(scrollregion=canvas_frame.bbox("all"))
@@ -158,7 +166,6 @@ def check_letter(event):
             wrong_letters_add.pack(side="left")
 
         elif event.keysym == current_letter:
-            print(f"CORRECT LETTER: {current_letter}")
             user_inputs.append(event.char)
             current_letter_list[letter_counter].config(bg="light green")
             letter_counter += 1
@@ -168,7 +175,6 @@ def check_letter(event):
             user_inputs.append(event.char)
             current_letter_list[letter_counter].config(bg="red")
             letter_counter += 1
-            print(f"WRONG LETTER: {event.keysym}")
             refresh_word()
 
 def scroll_down():
@@ -178,8 +184,10 @@ def scroll_down():
 
 def start_timer():
     global time_left, can_type
+    words.test_words()
+    score_label.config(text=f"Score: --")
     if time_left > 0:
-        start_button.config(text="Stop", command=end_timer)
+        start_button.config(text="Restart", command=end_timer)
         text_entry.config(state="normal")
         can_type = True
 
@@ -189,24 +197,51 @@ def start_timer():
 
     elif time_left == 0:
         words_per_minute()
-        text_entry.config(state="disabled")
-        can_type = False
+        reset()
         time_left = 61
 
 def end_timer():
     global time_left
     time_left = 0
+    reset()
+
+def reset():
+    global word_units, letter_counter, word_counter, user_inputs, can_type
+    for label, _ in word_units.values():
+            label.destroy()
+
+    word_units = {}
+    letter_counter = 0
+    word_counter = 0
+    user_inputs = []
+    can_type = False
+    text_entry.delete(0, END)
+    timer_label.config(text=f"Timer: --")
+    text_entry.config(state="disabled")
     start_button.config(text="Start", command=start_timer)
+    words.test_words()
+    word_bank()
+    refresh_word()
+    canvas_frame.yview_moveto(0)
 
 def words_per_minute():
     global correct_characters, incorrect_characters
     total_characters = correct_characters + incorrect_characters
     raw_wpm = (total_characters/5)
-    accuracy = (correct_characters/total_characters) * 100
+    try:
+        accuracy = (correct_characters/total_characters) * 100
+    except ZeroDivisionError:
+        accuracy = 0
     adjusted_wpm = raw_wpm * (accuracy/100)
     score_label.config(text=f"WPM: {adjusted_wpm:.1f}")
-    with open("highest_wpm.txt", "w") as file:
-        file.write(f"{adjusted_wpm:.1f}")
+    with open("highest_wpm.txt", "r+") as file:
+        highest_wpm = float(file.read())
+
+        if adjusted_wpm > highest_wpm:
+            high_score_label.config(text=f"WPM: {adjusted_wpm:.1f}")
+            file.seek(0)
+            file.write(f"{adjusted_wpm:.1f}")
+            file.truncate()
     
     correct_characters = 0
     incorrect_characters = 0
@@ -219,11 +254,12 @@ text_entry.focus()
 text_entry.grid(column=1, row=0, padx=30, pady=10)
 timer_label = Label(bottom_frame, text=f"Timer: --", font=LABEL_FONT)
 timer_label.grid(column=0, row=0)
-score_label = Label(bottom_frame, text=f"WPM: {high_score}", font=LABEL_FONT)
+score_label = Label(bottom_frame, text=f"Score: --", font=LABEL_FONT)
 score_label.grid(column=2, row=0)
+high_score_label = Label(bottom_frame, text=f"Highest WPM: {high_score}", font=LABEL_FONT)
+high_score_label.grid(column=2, row=1)
 start_button = Button(bottom_frame, text="Start", command=start_timer)
 start_button.grid(column=1, row=1, pady=20)
-
 
 check_word()
 

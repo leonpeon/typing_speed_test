@@ -10,8 +10,7 @@ class Words():
         word_list = []
         while len(word_list) < 200:
             word = choice(self.word_list).strip()
-            if word in word_list:
-                pass
-            else:
+            if word not in word_list:
                 word_list.append(word)
+        self.words_for_test = word_list
         return word_list
