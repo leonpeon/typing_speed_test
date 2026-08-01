@@ -54,17 +54,6 @@ word_frame.bind(
 word_units = {} # A frame which contains the labels of each letter of each word.
 word_dict = {}
 
-# Main variables
-word_counter = 0 # Tracks index of current word within word list
-current_word = word_dict[word_counter] # Tracks current word
-current_letter_list = word_units[current_word][1] # List of letters within the current word
-letter_counter = 0 # Tracks index of current letter within the word
-current_letter = list(current_word)[letter_counter] # Current letter of current word
-user_inputs = [] # Tracks the keypresses the user makes
-move_units = 0 # Tracks where the position of the user's screen
-correct_characters = 0 # Tracks the amount of correct characters the user typed
-incorrect_characters = 0 # Tracks the amount of incorrect characters
-
 # Creates the display and dictionary of words with their corresponding word labels.
 def word_bank():
     global word_units, word_dict
@@ -246,6 +235,17 @@ def words_per_minute():
 
 word_frame.update_idletasks()
 canvas_frame.configure(scrollregion=canvas_frame.bbox("all"))
+
+# Main variables
+word_counter = 0 # Tracks index of current word within word list
+current_word = word_dict[word_counter] # Tracks current word
+current_letter_list = word_units[current_word][1] # List of letters within the current word
+letter_counter = 0 # Tracks index of current letter within the word
+current_letter = list(current_word)[letter_counter] # Current letter of current word
+user_inputs = [] # Tracks the keypresses the user makes
+move_units = 0 # Tracks where the position of the user's screen
+correct_characters = 0 # Tracks the amount of correct characters the user typed
+incorrect_characters = 0 # Tracks the amount of incorrect characters
 
 # Adjusts placement of window
 window_width = 1000
