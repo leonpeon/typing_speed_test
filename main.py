@@ -179,6 +179,7 @@ def scroll_down():
 def start_timer():
     global time_left, can_type
     if time_left > 0:
+        start_button.config(text="Stop", command=end_timer)
         text_entry.config(state="normal")
         can_type = True
 
@@ -191,6 +192,11 @@ def start_timer():
         text_entry.config(state="disabled")
         can_type = False
         time_left = 61
+
+def end_timer():
+    global time_left
+    time_left = 0
+    start_button.config(text="Start", command=start_timer)
 
 def words_per_minute():
     global correct_characters, incorrect_characters
