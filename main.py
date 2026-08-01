@@ -30,8 +30,10 @@ LABEL_FONT = tkFont.Font(
     weight="normal"
 )
 
+BG_COLOUR = "pink"
+
 # Title of program
-title_label = Label(window, text="TYPING SPEED TEST", font=TITLE_FONT, fg="purple")
+title_label = Label(window, text="TYPING SPEED TEST", font=TITLE_FONT, fg="purple", bg=BG_COLOUR)
 title_label.pack()
 
 # Word display frame
@@ -52,7 +54,7 @@ word_frame.bind(
 word_units = {} # A frame which contains the labels of each letter of each word.
 word_dict = {}
 
-# Creates dictionary of words with their corresponding word labels.
+# Creates the display and dictionary of words with their corresponding word labels.
 def word_bank():
     global word_units, word_dict
     word_units = {}
@@ -79,20 +81,11 @@ def word_bank():
 
 word_bank()
 
-
-word_frame.update_idletasks()
-canvas_frame.configure(scrollregion=canvas_frame.bbox("all"))
-
-word_counter = 0
-current_word = word_dict[word_counter]
-current_letter_list = word_units[current_word][1]
-letter_counter = 0
-current_letter = list(current_word)[letter_counter]
-user_inputs = []
-move_units = 0
-
-correct_characters = 0
-incorrect_characters = 0
+# Provides the first word
+def check_word():
+    global current_word, current_letter_list
+    for letter in current_letter_list:
+        letter.configure(bg="light blue")
 
 # Refreshs the letter / word everytime the user makes a keypress
 def refresh_word():
@@ -103,12 +96,6 @@ def refresh_word():
         current_letter = list(current_word)[letter_counter]
     except IndexError:
         current_letter = None
-
-# Provides the first word
-def check_word():
-    global current_word, current_letter_list
-    for letter in current_letter_list:
-        letter.configure(bg="light blue")
 
 # Provides a new word everytime the user presses space
 def new_word():
@@ -246,25 +233,8 @@ def words_per_minute():
     correct_characters = 0
     incorrect_characters = 0
 
-# Text box for user input
-bottom_frame = Frame(window)
-bottom_frame.pack()
-text_entry = Entry(bottom_frame, text="Type here:", state="disabled")
-text_entry.focus()
-text_entry.grid(column=1, row=0, padx=30, pady=10)
-timer_label = Label(bottom_frame, text=f"Timer: --", font=LABEL_FONT)
-timer_label.grid(column=0, row=0)
-score_label = Label(bottom_frame, text=f"Score: --", font=LABEL_FONT)
-score_label.grid(column=2, row=0)
-high_score_label = Label(bottom_frame, text=f"Highest WPM: {high_score}", font=LABEL_FONT)
-high_score_label.grid(column=2, row=1)
-start_button = Button(bottom_frame, text="Start", command=start_timer)
-start_button.grid(column=1, row=1, pady=20)
-
-check_word()
-
-text_entry.bind("<KeyPress>", check_letter)
-
+word_frame.update_idletasks()
+canvas_frame.configure(scrollregion=canvas_frame.bbox("all"))
 
 # Adjusts placement of window
 window_width = 1000
@@ -275,4 +245,35 @@ screen_height = window.winfo_screenheight()
 x = (screen_width - window_width) // 2
 y = (screen_height - screen_height) // 2 + 25
 window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+window.config(bg=BG_COLOUR)
+
+# Text box for user input
+bottom_frame = Frame(window, bg=BG_COLOUR)
+bottom_frame.pack()
+text_entry = Entry(bottom_frame, text="Type here:", state="disabled", font=("arial", 24), bg="light yellow")
+text_entry.focus()
+text_entry.grid(column=1, row=0, padx=30, pady=10)
+timer_label = Label(bottom_frame, text=f"Timer: --", font=LABEL_FONT, bg=BG_COLOUR)
+timer_label.grid(column=0, row=0)
+score_label = Label(bottom_frame, text=f"Score: --", font=LABEL_FONT, bg=BG_COLOUR)
+score_label.grid(column=2, row=0)
+high_score_label = Label(bottom_frame, text=f"Highest WPM: {high_score}", font=LABEL_FONT, bg=BG_COLOUR)
+high_score_label.grid(column=2, row=1)
+start_button = Button(bottom_frame, text="Start", font=("arial", 14), command=start_timer)
+start_button.grid(column=1, row=1, pady=20)
+
+# Main variables
+word_counter = 0
+current_word = word_dict[word_counter]
+current_letter_list = word_units[current_word][1]
+letter_counter = 0
+current_letter = list(current_word)[letter_counter]
+user_inputs = []
+move_units = 0
+correct_characters = 0
+incorrect_characters = 0
+
+check_word()
+text_entry.bind("<KeyPress>", check_letter)
+
 window.mainloop()
